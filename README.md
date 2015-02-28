@@ -1,25 +1,43 @@
-About
-========
-Simple PNG encoder/decoder for Node.js with no native dependencies.
+# png-async
+A simple and **non-blocking** PNG encoder / decoder for Node.
 
-Installation
-===============
-```
-$ npm install node-png  --save
+[![npm version][npm-img]][npm-url]
+[![Linux Build][travis-img]][travis-url]
+[![Windows Build][appveyor-img]][appveyor-url]
+[![devDependency Status][devdep-img]][devdep-url]
+
+forked from [node-png](https://github.com/leogiese/node-png).
+
+## Install
+
+```bash
+$ npm install png-async --save
 ```
 
-Example
-==========
+## Build (for Developers)
+
+```bash
+$ git clone https://github.com/kanreisa/node-png-async.git
+$ cd node-png-async
+$ npm install
+$ npm run tsd reinstall
+$ npm run tsd rebundle
+$ npm run build
+```
+
+## Example
+
 ```js
-var fs = require('fs'),
-    PNG = require('node-png').PNG;
+var fs = require('fs');
+var png = require('png-async');
 
 fs.createReadStream('in.png')
-    .pipe(new PNG({
+    .pipe(png.createImage({
         filterType: 4
     }))
-    .on('parsed', function() {
-
+    .on('parsed', function () {
+    
+        // Note: this is blocking. be careful.
         for (var y = 0; y < this.height; y++) {
             for (var x = 0; x < this.width; x++) {
                 var idx = (this.width * y + x) << 2;
@@ -39,21 +57,20 @@ fs.createReadStream('in.png')
 ```
 For more examples see `examples` folder.
 
-Documentation
-================
+## Documentation
 
 As input any color type is accepted (grayscale, rgb, palette, grayscale with alpha, rgb with alpha) but 8 bit per sample (channel) is the only supported bit depth. Interlaced mode is not supported.
 
-### Supported ancillary chunks
-- `gAMA` - gamma,
-- `tRNS` - transparency (but only for paletted image)
+#### Supported ancillary chunks
+* `gAMA` - gamma,
+* `tRNS` - transparency (but only for paletted image)
 
+### Class: Image
 
-## Class: PNG
-`PNG` is readable and writable `Stream`.
+`Image` is readable and writable `Stream`.
 
+#### Options
 
-### Options
 - `width` - use this with `height` if you want to create png from scratch
 - `height` - as above
 - `checkCRC` - whether parser should be strict about checksums in source stream (default: `true`)
@@ -62,8 +79,8 @@ As input any color type is accepted (grayscale, rgb, palette, grayscale with alp
 - `deflateStrategy` - compression strategy for delate (default: 3)
 - `filterType` - png filtering method for scanlines (default: -1 => auto, accepts array of numbers 0-4)
 
+#### Event "metadata"
 
-### Event "metadata"
 `function(metadata) { }`
 Image's header has been parsed, metadata contains this information:
 - `width` image size in pixels
@@ -72,17 +89,18 @@ Image's header has been parsed, metadata contains this information:
 - `color` image is not grayscale
 - `alpha` image contains alpha channel
 
+#### Event: "parsed"
 
-### Event: "parsed"
 `function(data) { }`
 Input image has been completly parsed, `data` is complete and ready for modification.
 
 
-### Event: "error"
+#### Event: "error"
+
 `function(error) { }`
 
+#### Image#parse(data: Buffer, callback?: (err: Error, data: Buffer) => void): Image
 
-### png.parse(data, [callback])
 Parses PNG file data. Alternatively you can stream data to instance of PNG.
 
 Optional `callback` is once called on `error` or `parsed`. The callback gets
@@ -90,88 +108,48 @@ two arguments `(err, data)`.
 
 Returns `this` for method chaining.
 
+#### Image#pack(): Image
 
-### png.pack()
 Starts converting data to PNG file Stream.
 
 Returns `this` for method chaining.
 
 
-### png.bitblt(dst, sx, sy, w, h, dx, dy)
+#### Image#bitblt(dst: Image, sx: number, sy: number, w: number, h: number, dx: number, dy: number): Image
+
 Helper for image manipulation, copies rectangle of pixels from current image (`sx`, `sy`, `w`, `h`) to `dst` image (at `dx`, `dy`).
 
 Returns `this` for method chaining.
 
 
-### Property: width
+#### Image#width: number
+
 Width of image in pixels
 
 
-### Property: height
+#### Image#height: number
+
 Height of image in pixels
 
 
-### Property: data
+#### Image#data: Buffer
+
 Buffer of image pixel data. Every pixel consists 4 bytes: R, G, B, A (opacity).
 
 
-### Property: gamma
+#### Image#gamma: number
+
 Gamma of image (0 if not specified)
 
-Changelog
-============
+## License
 
-### 0.4.3 - 19 June 2014
-  - fixed fill
-  - fix(chunkstream): max call stack thrown when parsing large pngs
-  
-### 0.4.0 - Jun 05 2013
-  - fixed reading of destroyed input stream
+[MIT](LICENSE)
 
-### 0.4.0-alpha - 29 Nov 2012
-  - added zlib deflateStrategy option, default to Z_RLE (by pdpotter)
-  - added possibility to use multiple filters (by pdpotter, modified by niegowski)
-
-### 0.3.0-alpha - 23 Aug 2012
-  - Processing data as Streams, not complete Buffers of data
-
-### 0.2.0-alpha - 21 Aug 2012
-  - Input added palette, grayscale, no alpha support
-  - Better scanline filter selection
-
-### 0.1.0-alpha - 19 Aug 2012
-  - First version
-
-
-Contributors
-============
-
-brighthas https://github.com/brighthas
-
-steelsojka https://github.com/steelsojka
-
-
-License
-=========
-
-(The MIT License)
-
-Copyright (c) 2014 brighthas <brighthas@gmail.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+[npm-img]: https://img.shields.io/npm/v/png-async.svg
+[npm-url]: https://npmjs.org/package/png-async
+[travis-img]: https://img.shields.io/travis/kanreisa/node-png-async.svg
+[travis-url]: https://travis-ci.org/kanreisa/node-png-async
+[appveyor-img]: https://img.shields.io/appveyor/ci/kanreisa/node-png-async.svg
+[appveyor-url]: https://ci.appveyor.com/project/kanreisa/node-png-async
+[devdep-img]: https://david-dm.org/kanreisa/node-png-async/dev-status.svg
+[devdep-url]: https://david-dm.org/kanreisa/node-png-async#info=devDependencies
