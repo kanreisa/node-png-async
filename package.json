@@ -1,29 +1,42 @@
 {
-  "name": "node-png",
-  "version": "0.4.3",
-  "description": "Simple PNG encoder/decoder",
-  "author": "Kuba Niegowski",
-  "contributors": [],
-  "homepage": "https://github.com/brighthas/node-pngjs/",
-  "keywords": [
-    "png"
-  ],
-  "engines": {
-    "node": "0.10.x"
-  },
-  "main": "./lib/png.js",
-  "directories": {
-    "example": "examples"
-  },
+  "name": "png-async",
+  "version": "0.9.0",
+  "description": "A simple and non-blocking PNG encoder / decoder.",
+  "main": "./lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "gulp test",
+    "build": "gulp build",
+    "watch": "gulp watch",
+    "tsd": "tsd"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/brighthas/node-pngjs.git"
+    "url": "https://github.com/kanreisa/node-png-async.git"
   },
-  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/brighthas/node-pngjs/issues"
+    "url": "https://github.com/kanreisa/node-png-async/issues"
+  },
+  "keywords": [
+    "png",
+    "stream",
+    "async",
+    "non-blocking"
+  ],
+  "author": "Yuki KAN <re@pixely.jp> (https://github.com/kanreisa)",
+  "contributors": [
+    "niegowski",
+    "brighthas",
+    "steelsojka"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/kanreisa/node-png-async",
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-mocha": "^2.0.0",
+    "gulp-rename": "^1.2.0",
+    "gulp-typescript": "^2.4.2",
+    "merge2": "^0.3.1",
+    "tsd": "^0.6.0-beta.5",
+    "typescript": "^1.4.1"
   }
 }
