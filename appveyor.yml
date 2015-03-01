@@ -1,0 +1,23 @@
+environment:
+  matrix:
+  - nodejs_version: "0.12"
+  - nodejs_version: "1.0"
+
+platform:
+  - x86
+  - x64
+
+install:
+  - ps: Install-Product node $env:nodejs_version $env:platform
+  - npm install
+  - npm run tsd reinstall
+  - npm run tsd rebundle
+
+test_script:
+  - node --version
+  - npm --version
+  - npm run build
+  - npm test
+
+# Don't actually build.
+build: off
