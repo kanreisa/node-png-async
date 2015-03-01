@@ -99,7 +99,7 @@ Input image has been completly parsed, `data` is complete and ready for modifica
 
 `function(error) { }`
 
-#### Image#parse(data: Buffer, callback?: (err: Error, data: Buffer) => void): Image
+#### Image#parse(data: Buffer, callback?: (err: Error, image: Image) => void): Image
 
 Parses PNG file data. Alternatively you can stream data to instance of PNG.
 
