@@ -56,13 +56,13 @@ class CrcStream extends stream.Writable {
         return this._crc ^ -1;
     }
 
-    write(data): boolean {
+    _write(data, encoding, cb): void {
 
         for (var i = 0; i < data.length; i++) {
             this._crc = crcTable[(this._crc ^ data[i]) & 0xff] ^ (this._crc >>> 8);
         }
 
-        return true;
+        cb();
     }
 
     end(data?): void {

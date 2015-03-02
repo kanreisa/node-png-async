@@ -93,16 +93,17 @@ class Filter extends ChunkStream {
     filter(): Buffer {
 
         var pxData = this._data,
-            rawData = new Buffer(((this._width << 2) + 1) * this._height);
+            rawData = new Buffer(((this._width << 2) + 1) * this._height),
+            i: number, l: number, y: number, min: number, sel: number, sum: number;
 
-        for (var y = 0; y < this._height; y++) {
-
+        for (y = 0; y < this._height; y++) {
             // find best filter for this line (with lowest sum of values)
-            var min = Infinity,
-                sel = 0;
+            min = Infinity;
+            sel = 0;
 
-            for (var i = 0, l = this._filterTypes.length; i < l; i++) {
-                var sum = this._filters[this._filterTypes[i]](pxData, y, null);
+            for (i = 0, l = this._filterTypes.length; i < l; i++) {
+                sum = this._filters[this._filterTypes[i]](pxData, y, null);
+
                 if (sum < min) {
                     sel = this._filterTypes[i];
                     min = sum;
@@ -111,6 +112,7 @@ class Filter extends ChunkStream {
 
             this._filters[sel](pxData, y, rawData);
         }
+
         return rawData;
     }
 
@@ -119,80 +121,74 @@ class Filter extends ChunkStream {
         var pxData = this._data,
             pxLineLength = this._width << 2,
             pxRowPos = this._line * pxLineLength,
-            filter = rawData[0];
+            filter = rawData[0],
+            i: number, x: number, pxPos: number, rawPos: number, idx: number, left: number, up: number, add: number, upLeft: number;
 
-        if (filter == 0) {
-            for (var x = 0; x < this._width; x++) {
-                var pxPos = pxRowPos + (x << 2),
-                    rawPos = 1 + x * this._bpp;
+        if (filter === 0) {
+            for (x = 0; x < this._width; x++) {
+                pxPos = pxRowPos + (x << 2);
+                rawPos = 1 + x * this._bpp;
 
-                for (var i = 0; i < 4; i++) {
-                    var idx = pixelBppMap[this._bpp][i];
-                    pxData[pxPos + i] = idx != 0xff ? rawData[rawPos + idx] : 0xff;
+                for (i = 0; i < 4; i++) {
+                    idx = pixelBppMap[this._bpp][i];
+
+                    pxData[pxPos + i] = idx !== 0xff ? rawData[rawPos + idx] : 0xff;
                 }
             }
+        } else if (filter === 1) {
+            for (x = 0; x < this._width; x++) {
+                pxPos = pxRowPos + (x << 2);
+                rawPos = 1 + x * this._bpp;
 
-        } else if (filter == 1) {
-            for (var x = 0; x < this._width; x++) {
-                var pxPos = pxRowPos + (x << 2),
-                    rawPos = 1 + x * this._bpp;
+                for (i = 0; i < 4; i++) {
+                    idx = pixelBppMap[this._bpp][i];
+                    left = x > 0 ? pxData[pxPos + i - 4] : 0;
 
-                for (var i = 0; i < 4; i++) {
-                    var idx = pixelBppMap[this._bpp][i],
-                        left = x > 0 ? pxData[pxPos + i - 4] : 0;
-
-                    pxData[pxPos + i] = idx != 0xff ? rawData[rawPos + idx] + left : 0xff;
+                    pxData[pxPos + i] = idx !== 0xff ? rawData[rawPos + idx] + left : 0xff;
                 }
             }
+        } else if (filter === 2) {
+            for (x = 0; x < this._width; x++) {
+                pxPos = pxRowPos + (x << 2);
+                rawPos = 1 + x * this._bpp;
 
-        } else if (filter == 2) {
-            for (var x = 0; x < this._width; x++) {
-                var pxPos = pxRowPos + (x << 2),
-                    rawPos = 1 + x * this._bpp;
+                for (i = 0; i < 4; i++) {
+                    idx = pixelBppMap[this._bpp][i];
+                    up = this._line > 0 ? pxData[pxPos - pxLineLength + i] : 0;
 
-                for (var i = 0; i < 4; i++) {
-                    var idx = pixelBppMap[this._bpp][i],
-                        up = this._line > 0 ? pxData[pxPos - pxLineLength + i] : 0;
-
-                    pxData[pxPos + i] = idx != 0xff ? rawData[rawPos + idx] + up : 0xff;
+                    pxData[pxPos + i] = idx !== 0xff ? rawData[rawPos + idx] + up : 0xff;
                 }
-
             }
+        } else if (filter === 3) {
+            for (x = 0; x < this._width; x++) {
+                pxPos = pxRowPos + (x << 2);
+                rawPos = 1 + x * this._bpp;
 
-        } else if (filter == 3) {
-            for (var x = 0; x < this._width; x++) {
-                var pxPos = pxRowPos + (x << 2),
-                    rawPos = 1 + x * this._bpp;
+                for (i = 0; i < 4; i++) {
+                    idx = pixelBppMap[this._bpp][i];
+                    left = x > 0 ? pxData[pxPos + i - 4] : 0;
+                    up = this._line > 0 ? pxData[pxPos - pxLineLength + i] : 0;
+                    add = Math.floor((left + up) / 2);
 
-                for (var i = 0; i < 4; i++) {
-                    var idx = pixelBppMap[this._bpp][i],
-                        left = x > 0 ? pxData[pxPos + i - 4] : 0,
-                        up = this._line > 0 ? pxData[pxPos - pxLineLength + i] : 0,
-                        add = Math.floor((left + up) / 2);
-
-                    pxData[pxPos + i] = idx != 0xff ? rawData[rawPos + idx] + add : 0xff;
+                    pxData[pxPos + i] = idx !== 0xff ? rawData[rawPos + idx] + add : 0xff;
                 }
-
             }
+        } else if (filter === 4) {
+            for (x = 0; x < this._width; x++) {
+                pxPos = pxRowPos + (x << 2);
+                rawPos = 1 + x * this._bpp;
 
-        } else if (filter == 4) {
-            for (var x = 0; x < this._width; x++) {
-                var pxPos = pxRowPos + (x << 2),
-                    rawPos = 1 + x * this._bpp;
+                for (i = 0; i < 4; i++) {
+                    idx = pixelBppMap[this._bpp][i];
+                    left = x > 0 ? pxData[pxPos + i - 4] : 0;
+                    up = this._line > 0 ? pxData[pxPos - pxLineLength + i] : 0;
+                    upLeft = x > 0 && this._line > 0 ? pxData[pxPos - pxLineLength + i - 4] : 0;
+                    add = PaethPredictor(left, up, upLeft);
 
-                for (var i = 0; i < 4; i++) {
-                    var idx = pixelBppMap[this._bpp][i],
-                        left = x > 0 ? pxData[pxPos + i - 4] : 0,
-                        up = this._line > 0 ? pxData[pxPos - pxLineLength + i] : 0,
-                        upLeft = x > 0 && this._line > 0
-                        ? pxData[pxPos - pxLineLength + i - 4] : 0,
-                        add = PaethPredictor(left, up, upLeft);
-
-                    pxData[pxPos + i] = idx != 0xff ? rawData[rawPos + idx] + add : 0xff;
+                    pxData[pxPos + i] = idx !== 0xff ? rawData[rawPos + idx] + add : 0xff;
                 }
             }
         }
-
 
         this._line++;
 
@@ -210,9 +206,9 @@ class Filter extends ChunkStream {
             sum = 0;
 
         if (!rawData) {
-            for (var x = 0; x < pxRowLength; x++)
+            for (var x = 0; x < pxRowLength; x++) {
                 sum += Math.abs(pxData[y * pxRowLength + x]);
-
+            }
         } else {
             rawData[y * rawRowLength] = 0;
             pxData.copy(rawData, rawRowLength * y + 1, pxRowLength * y, pxRowLength * (y + 1));
@@ -225,18 +221,22 @@ class Filter extends ChunkStream {
 
         var pxRowLength = this._width << 2,
             rawRowLength = pxRowLength + 1,
-            sum = 0;
+            sum = 0,
+            left: number, val: number;
 
-        if (rawData)
+        if (rawData) {
             rawData[y * rawRowLength] = 1;
+        }
 
         for (var x = 0; x < pxRowLength; x++) {
+            left = x >= 4 ? pxData[y * pxRowLength + x - 4] : 0;
+            val = pxData[y * pxRowLength + x] - left;
 
-            var left = x >= 4 ? pxData[y * pxRowLength + x - 4] : 0,
-                val = pxData[y * pxRowLength + x] - left;
-
-            if (!rawData) sum += Math.abs(val);
-            else rawData[y * rawRowLength + 1 + x] = val;
+            if (!rawData) {
+                sum += Math.abs(val);
+            } else {
+                rawData[y * rawRowLength + 1 + x] = val;
+            }
         }
 
         return sum;
@@ -246,18 +246,22 @@ class Filter extends ChunkStream {
 
         var pxRowLength = this._width << 2,
             rawRowLength = pxRowLength + 1,
-            sum = 0;
+            sum = 0,
+            up: number, val: number;
 
-        if (rawData)
+        if (rawData) {
             rawData[y * rawRowLength] = 2;
+        }
 
         for (var x = 0; x < pxRowLength; x++) {
+            up = y > 0 ? pxData[(y - 1) * pxRowLength + x] : 0;
+            val = pxData[y * pxRowLength + x] - up;
 
-            var up = y > 0 ? pxData[(y - 1) * pxRowLength + x] : 0,
-                val = pxData[y * pxRowLength + x] - up;
-
-            if (!rawData) sum += Math.abs(val);
-            else rawData[y * rawRowLength + 1 + x] = val;
+            if (!rawData) {
+                sum += Math.abs(val);
+            } else {
+                rawData[y * rawRowLength + 1 + x] = val;
+            }
         }
 
         return sum;
@@ -267,19 +271,23 @@ class Filter extends ChunkStream {
 
         var pxRowLength = this._width << 2,
             rawRowLength = pxRowLength + 1,
-            sum = 0;
+            sum = 0,
+            left: number, up: number, val: number;
 
-        if (rawData)
+        if (rawData) {
             rawData[y * rawRowLength] = 3;
+        }
 
         for (var x = 0; x < pxRowLength; x++) {
+            left = x >= 4 ? pxData[y * pxRowLength + x - 4] : 0;
+            up = y > 0 ? pxData[(y - 1) * pxRowLength + x] : 0;
+            val = pxData[y * pxRowLength + x] - ((left + up) >> 1);
 
-            var left = x >= 4 ? pxData[y * pxRowLength + x - 4] : 0,
-                up = y > 0 ? pxData[(y - 1) * pxRowLength + x] : 0,
-                val = pxData[y * pxRowLength + x] - ((left + up) >> 1);
-
-            if (!rawData) sum += Math.abs(val);
-            else rawData[y * rawRowLength + 1 + x] = val;
+            if (!rawData) {
+                sum += Math.abs(val);
+            } else {
+                rawData[y * rawRowLength + 1 + x] = val;
+            }
         }
 
         return sum;
@@ -289,20 +297,24 @@ class Filter extends ChunkStream {
 
         var pxRowLength = this._width << 2,
             rawRowLength = pxRowLength + 1,
-            sum = 0;
+            sum = 0,
+            left: number, up: number, upLeft: number, val: number;
 
-        if (rawData)
+        if (rawData) {
             rawData[y * rawRowLength] = 4;
+        }
 
         for (var x = 0; x < pxRowLength; x++) {
+            left = x >= 4 ? pxData[y * pxRowLength + x - 4] : 0;
+            up = y > 0 ? pxData[(y - 1) * pxRowLength + x] : 0;
+            upLeft = x >= 4 && y > 0 ? pxData[(y - 1) * pxRowLength + x - 4] : 0;
+            val = pxData[y * pxRowLength + x] - PaethPredictor(left, up, upLeft);
 
-            var left = x >= 4 ? pxData[y * pxRowLength + x - 4] : 0,
-                up = y > 0 ? pxData[(y - 1) * pxRowLength + x] : 0,
-                upLeft = x >= 4 && y > 0 ? pxData[(y - 1) * pxRowLength + x - 4] : 0,
-                val = pxData[y * pxRowLength + x] - PaethPredictor(left, up, upLeft);
-
-            if (!rawData) sum += Math.abs(val);
-            else rawData[y * rawRowLength + 1 + x] = val;
+            if (!rawData) {
+                sum += Math.abs(val);
+            } else {
+                rawData[y * rawRowLength + 1 + x] = val;
+            }
         }
 
         return sum;

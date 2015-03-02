@@ -54,13 +54,18 @@ export class Image extends stream.Duplex {
         this.width = option.width || 0;
         this.height = option.height || 0;
 
-        this.data = this.width > 0 && this.height > 0
-        ? new Buffer(4 * this.width * this.height) : null;
+        if (this.width > 0 && this.height > 0) {
+            this.data = new Buffer(4 * this.width * this.height);
 
-        if (option.fill && this.data) { this.data.fill(0) };
+            if (option.fill) {
+                this.data.fill(0);
+            }
+        } else {
+            this.data = null;
+        }
 
         this.gamma = 0;
-        this.readable = this.writable = true;
+        this.writable = true;
 
         this._parser = new Parser(option || {});
 
@@ -68,23 +73,25 @@ export class Image extends stream.Duplex {
         this._parser.on('close', this._handleClose.bind(this));
         this._parser.on('metadata', this._metadata.bind(this));
         this._parser.on('gamma', this._gamma.bind(this));
-        this._parser.on('parsed', function (data) {
+        this._parser.on('parsed', (data) => {
             this.data = data;
             this.emit('parsed', data);
-        }.bind(this));
+        });
 
         this._packer = new Packer(option);
+
         this._packer.on('data', this.emit.bind(this, 'data'));
         this._packer.on('end', this.emit.bind(this, 'end'));
-        this._parser.on('close', this._handleClose.bind(this));
+        this._packer.on('close', this._handleClose.bind(this));
         this._packer.on('error', this.emit.bind(this, 'error'));
     }
 
     pack(): Image {
 
-        process.nextTick(function () {
+        setImmediate(() => {
             this._packer.pack(this.data, this.width, this.height);
-        }.bind(this));
+            this.readable = true;
+        });
 
         return this;
     }
@@ -94,19 +101,18 @@ export class Image extends stream.Duplex {
         if (callback) {
             var onParsed = null, onError = null;
 
-            this.once('parsed', onParsed = function (data) {
+            this.once('parsed', onParsed = (data) => {
                 this.removeListener('error', onError);
 
                 this.data = data;
                 callback(null, this);
+            });
 
-            }.bind(this));
-
-            this.once('error', onError = function (err) {
+            this.once('error', onError = (err) => {
                 this.removeListener('parsed', onParsed);
 
                 callback(err, null);
-            }.bind(this));
+            });
         }
 
         this.end(data);
@@ -114,8 +120,8 @@ export class Image extends stream.Duplex {
         return this;
     }
 
-    write(data, cb?): boolean {
-        return this._parser.write(data, cb);
+    _write(data, encoding, callback) {
+        return this._parser._write(data, encoding, callback);
     }
 
     end(data?): void {

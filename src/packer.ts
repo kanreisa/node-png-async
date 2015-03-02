@@ -45,22 +45,23 @@ class Packer extends stream.Readable {
             level: this._option.deflateLevel,
             strategy: this._option.deflateStrategy
         });
+
         deflate.on('error', this.emit.bind(this, 'error'));
 
-        deflate.on('data', function (data) {
+        deflate.on('data', (data) => {
             this.emit('data', this._packIDAT(data));
-        }.bind(this));
+        });
 
-        deflate.on('end', function () {
+        deflate.on('end', () => {
             this.emit('data', this._packIEND());
             this.emit('end');
-        }.bind(this));
+        });
 
         deflate.end(data);
     }
 
     _read() {
-
+        //todo
     }
 
     private _packChunk(type: number, data?: Buffer): Buffer {

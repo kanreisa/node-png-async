@@ -72,9 +72,10 @@ class Parser extends ChunkStream {
 
     private _handleSignature(): void {
 
-        this.read(constants.PNG_SIGNATURE.length,
+        this.read(
+            constants.PNG_SIGNATURE.length,
             this._parseSignature.bind(this)
-            );
+        );
     }
 
     private _parseSignature(data: Buffer): void {
@@ -82,7 +83,7 @@ class Parser extends ChunkStream {
         var signature = constants.PNG_SIGNATURE;
 
         for (var i = 0; i < signature.length; i++) {
-            if (data[i] != signature[i]) {
+            if (data[i] !== signature[i]) {
                 this.emit('error', new Error('Invalid file signature'));
                 return;
             }
@@ -99,8 +100,9 @@ class Parser extends ChunkStream {
         // chunk type
         var type = data.readUInt32BE(4),
             name = '';
-        for (var i = 4; i < 8; i++)
+        for (var i = 4; i < 8; i++) {
             name += String.fromCharCode(data[i]);
+        }
 
         // console.log('chunk ', name, length);
 
@@ -109,8 +111,8 @@ class Parser extends ChunkStream {
             priv = !!(data[5] & 0x20),  // or public
             safeToCopy = !!(data[7] & 0x20);  // or unsafe
 
-        if (!this._hasIHDR && type != constants.TYPE_IHDR) {
-            this.emit('error', new Error('Expected IHDR on beggining'));
+        if (!this._hasIHDR && type !== constants.TYPE_IHDR) {
+            this.emit('error', new Error('Expected IHDR on beginning'));
             return;
         }
 
@@ -142,7 +144,7 @@ class Parser extends ChunkStream {
             calcCrc = this._crc.crc32;
 
         // check CRC
-        if (this._option.checkCRC && calcCrc != fileCrc) {
+        if (this._option.checkCRC && calcCrc !== fileCrc) {
             this.emit('error', new Error('Crc error'));
             return;
         }
@@ -171,12 +173,7 @@ class Parser extends ChunkStream {
             filter = data[11],
             interlace = data[12];
 
-        // console.log('    width', width, 'height', height,
-        //     'depth', depth, 'colorType', colorType,
-        //     'compr', compr, 'filter', filter, 'interlace', interlace
-        // );
-
-        if (depth != 8) {
+        if (depth !== 8) {
             this.emit('error', new Error('Unsupported bit depth ' + depth));
             return;
         }
@@ -184,15 +181,15 @@ class Parser extends ChunkStream {
             this.emit('error', new Error('Unsupported color type'));
             return;
         }
-        if (compr != 0) {
+        if (compr !== 0) {
             this.emit('error', new Error('Unsupported compression method'));
             return;
         }
-        if (filter != 0) {
+        if (filter !== 0) {
             this.emit('error', new Error('Unsupported filter method'));
             return;
         }
-        if (interlace != 0) {
+        if (interlace !== 0) {
             this.emit('error', new Error('Unsupported interlace method'));
             return;
         }
@@ -205,7 +202,7 @@ class Parser extends ChunkStream {
             colorTypeToBppMap[this._colorType],
             this._data,
             this._option
-            );
+        );
 
         this._hasIHDR = true;
 
@@ -230,7 +227,6 @@ class Parser extends ChunkStream {
         this._crc.write(data);
 
         var entries = Math.floor(data.length / 3);
-        // console.log('Palette:', entries);
 
         for (var i = 0; i < entries; i++) {
             this._palette.push([
@@ -253,8 +249,8 @@ class Parser extends ChunkStream {
         this._crc.write(data);
 
         // palette
-        if (this._colorType == 3) {
-            if (this._palette.length == 0) {
+        if (this._colorType === 3) {
+            if (this._palette.length === 0) {
                 this.emit('error', new Error('Transparency chunk must be after palette'));
                 return;
             }
@@ -293,8 +289,9 @@ class Parser extends ChunkStream {
 
         this._crc.write(data);
 
-        if (this._colorType == 3 && this._palette.length == 0)
+        if (this._colorType === 3 && this._palette.length === 0) {
             throw new Error('Expected palette not found');
+        }
 
         if (!this._inflate) {
             this._inflate = zlib.createInflate();
@@ -308,10 +305,11 @@ class Parser extends ChunkStream {
         this._inflate.write(data);
         length -= data.length;
 
-        if (length > 0)
+        if (length > 0) {
             this._handleIDAT(length);
-        else
+        } else {
             this._handleChunkEnd();
+        }
     }
 
     private _handleIEND(length: number): void {
@@ -331,20 +329,23 @@ class Parser extends ChunkStream {
 
     private _reverseFiltered(data: Buffer, width: number, height: number): void {
 
-        if (this._colorType == 3) { // paletted
+        if (this._colorType === 3) { // paletted
+
+            var i: number, y: number, x: number, pxRowPos: number, pxPos: number, color: number[];
 
             // use values from palette
             var pxLineLength = width << 2;
 
-            for (var y = 0; y < height; y++) {
-                var pxRowPos = y * pxLineLength;
+            for (y = 0; y < height; y++) {
+                pxRowPos = y * pxLineLength;
 
-                for (var x = 0; x < width; x++) {
-                    var pxPos = pxRowPos + (x << 2),
-                        color = this._palette[data[pxPos]];
+                for (x = 0; x < width; x++) {
+                    pxPos = pxRowPos + (x << 2),
+                    color = this._palette[data[pxPos]];
 
-                    for (var i = 0; i < 4; i++)
+                    for (i = 0; i < 4; i++) {
                         data[pxPos + i] = color[i];
+                    }
                 }
             }
         }

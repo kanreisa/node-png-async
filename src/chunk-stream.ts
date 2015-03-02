@@ -22,8 +22,31 @@ class ChunkStream extends stream.Duplex {
         this._reads = [];
         this._paused = false;
 
-        this._encoding = 'utf8';
         this.writable = true;
+    }
+
+    _read(size) {
+        throw new Error('Not implemented');
+    }
+
+    _write(data, encoding, cb) {
+
+        if (this.writable === false) {
+            cb(new Error('Stream not writable'));
+            return false;
+        }
+
+        this._buffers.push(data);
+        this._buffered += data.length;
+
+        setImmediate(() => this._process());
+
+        // ok if there are no more read requests
+        if (this._reads && this._reads.length === 0) {
+            this._paused = true;
+        }
+
+        cb();
     }
 
     read(length, callback?) {
@@ -34,7 +57,7 @@ class ChunkStream extends stream.Duplex {
             func: callback
         });
 
-        process.nextTick(() => {
+        setImmediate(() => {
 
             this._process();
 
@@ -47,33 +70,11 @@ class ChunkStream extends stream.Duplex {
         });
     }
 
-    write(data, encoding?): boolean {
+    end(data?): void {
 
-        if (!this.writable) {
-            this.emit('error', new Error('Stream not writable'));
-            return false;
+        if (data) {
+            this.write(data);
         }
-
-        if (!Buffer.isBuffer(data)) {
-            data = new Buffer(data, encoding || this._encoding);
-        }
-
-        this._buffers.push(data);
-        this._buffered += data.length;
-
-        this._process();
-
-        // ok if there are no more read requests
-        if (this._reads && this._reads.length == 0) {
-            this._paused = true;
-        }
-
-        return this.writable && !this._paused;
-    }
-
-    end(data?, encoding?): void {
-
-        if (data) this.write(data, encoding);
 
         this.writable = false;
 
@@ -81,11 +82,11 @@ class ChunkStream extends stream.Duplex {
         if (!this._buffers) return;
 
         // enqueue or handle end
-        if (this._buffers.length == 0) {
+        if (this._buffers.length === 0) {
             this._end();
         } else {
             this._buffers.push(null);
-            this._process();
+            setImmediate(() => this._process());
         }
     }
 
@@ -93,7 +94,9 @@ class ChunkStream extends stream.Duplex {
 
     destroy() {
 
-        if (!this._buffers) return;
+        if (!this._buffers) {
+            return;
+        }
 
         this.writable = false;
         this._reads = null;
@@ -105,9 +108,7 @@ class ChunkStream extends stream.Duplex {
     private _end() {
 
         if (this._reads.length > 0) {
-            this.emit('error',
-                new Error('There are some read requests waitng on finished stream')
-                );
+            this.emit('error', new Error('There are some read requests waitng on finished stream'));
         }
 
         this.destroy();
@@ -115,10 +116,12 @@ class ChunkStream extends stream.Duplex {
 
     private _process() {
 
+        var buf: Buffer, data: Buffer, len: number, pos: number, count: number, read: any;
+
         // as long as there is any data and read requests
         while (this._buffered > 0 && this._reads && this._reads.length > 0) {
 
-            var read = this._reads[0];
+            read = this._reads[0];
 
             // read any data (but no more than length)
             if (read.allowLess) {
@@ -127,7 +130,7 @@ class ChunkStream extends stream.Duplex {
                 this._reads.shift(); // == read
 
                 // first we need to peek into first buffer
-                var buf = this._buffers[0];
+                buf = this._buffers[0];
 
                 // ok there is more data than we need
                 if (buf.length > read.length) {
@@ -144,33 +147,33 @@ class ChunkStream extends stream.Duplex {
 
                     read.func.call(this, buf);
                 }
-
             } else if (this._buffered >= read.length) {
                 // ok we can meet some expectations
 
                 this._reads.shift(); // == read
 
-                var pos = 0,
-                    count = 0,
-                    data = new Buffer(read.length);
+                pos = 0;
+                count = 0;
+                data = new Buffer(read.length);
 
                 // create buffer for all data
                 while (pos < read.length) {
-
-                    var buf = this._buffers[count++],
-                        len = Math.min(buf.length, read.length - pos);
+                    buf = this._buffers[count++];
+                    len = Math.min(buf.length, read.length - pos);
 
                     buf.copy(data, pos, 0, len);
                     pos += len;
 
                     // last buffer wasn't used all so just slice it and leave
-                    if (len != buf.length)
+                    if (len !== buf.length) {
                         this._buffers[--count] = buf.slice(len);
+                    }
                 }
 
                 // remove all used buffers
-                if (count > 0)
+                if (count > 0) {
                     this._buffers.splice(0, count);
+                }
 
                 this._buffered -= read.length;
 
@@ -183,7 +186,7 @@ class ChunkStream extends stream.Duplex {
             }
         }
 
-        if (this._buffers && this._buffers.length > 0 && this._buffers[0] == null) {
+        if (this._buffers && this._buffers.length > 0 && this._buffers[0] === null) {
             this._end();
         }
     }
