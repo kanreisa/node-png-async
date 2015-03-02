@@ -23,7 +23,7 @@ gulp.task('tsc', function () {
 });
 
 function test() {
-    return gulp.src(['test/*.js']).pipe(mocha({ reporter: 'spec', timeout: 100, slow: 10 }));
+    return gulp.src(['test/*.js']).pipe(mocha({ reporter: 'spec', timeout: 3000, slow: 10 }));
 };
 gulp.task('test', test);
 
