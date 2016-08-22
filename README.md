@@ -21,8 +21,7 @@ $ npm install png-async --save
 $ git clone https://github.com/kanreisa/node-png-async.git
 $ cd node-png-async
 $ npm install
-$ npm run tsd reinstall
-$ npm run tsd rebundle
+$ npm run typings-install
 $ npm run build
 ```
 
@@ -37,7 +36,7 @@ fs.createReadStream('in.png')
         filterType: 4
     }))
     .on('parsed', function () {
-    
+
         // Note: this is blocking. be careful.
         for (var y = 0; y < this.height; y++) {
             for (var x = 0; x < this.width; x++) {
