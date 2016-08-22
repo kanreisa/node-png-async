@@ -1,12 +1,11 @@
 language: node_js
 node_js:
   - "0.12"
-  - iojs
+  - "6"
 
 install:
   - npm install
-  - npm run tsd reinstall
-  - npm run tsd rebundle
+  - npm run typings-install
 
 script:
   - npm run build
