@@ -1,7 +1,7 @@
 environment:
   matrix:
   - nodejs_version: "0.12"
-  - nodejs_version: "1.0"
+  - nodejs_version: "6.0"
 
 platform:
   - x86
@@ -10,8 +10,7 @@ platform:
 install:
   - ps: Install-Product node $env:nodejs_version $env:platform
   - npm install
-  - npm run tsd reinstall
-  - npm run tsd rebundle
+  - npm run typings-install
 
 test_script:
   - node --version
