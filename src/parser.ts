@@ -9,7 +9,7 @@ import CrcStream = require('./crc');
 import ChunkStream = require('./chunk-stream');
 import Filter = require('./filter');
 
-var colorTypeToBppMap = {
+const colorTypeToBppMap = {
     0: 1,
     2: 3,
     3: 1,
@@ -80,9 +80,9 @@ class Parser extends ChunkStream {
 
     private _parseSignature(data: Buffer): void {
 
-        var signature = constants.PNG_SIGNATURE;
+        const signature = constants.PNG_SIGNATURE;
 
-        for (var i = 0; i < signature.length; i++) {
+        for (let i = 0; i < signature.length; i++) {
             if (data[i] !== signature[i]) {
                 this.emit('error', new Error('Invalid file signature'));
                 return;
@@ -95,21 +95,22 @@ class Parser extends ChunkStream {
     private _parseChunkBegin(data: Buffer): void {
 
         // chunk content length
-        var length = data.readUInt32BE(0);
+        const length = data.readUInt32BE(0);
 
         // chunk type
-        var type = data.readUInt32BE(4),
-            name = '';
-        for (var i = 4; i < 8; i++) {
+        const type = data.readUInt32BE(4);
+
+        let name = '';
+        for (let i = 4; i < 8; i++) {
             name += String.fromCharCode(data[i]);
         }
 
         // console.log('chunk ', name, length);
 
         // chunk flags
-        var ancillary = !!(data[4] & 0x20),  // or critical
-            priv = !!(data[5] & 0x20),  // or public
-            safeToCopy = !!(data[7] & 0x20);  // or unsafe
+        const ancillary = !!(data[4] & 0x20);  // or critical
+        //const priv = !!(data[5] & 0x20);  // or public
+        //const safeToCopy = !!(data[7] & 0x20);  // or unsafe
 
         if (!this._hasIHDR && type !== constants.TYPE_IHDR) {
             this.emit('error', new Error('Expected IHDR on beginning'));
@@ -140,8 +141,8 @@ class Parser extends ChunkStream {
 
     private _parseChunkEnd(data: Buffer): void {
 
-        var fileCrc = data.readInt32BE(0),
-            calcCrc = this._crc.crc32;
+        const fileCrc = data.readInt32BE(0);
+        const calcCrc = this._crc.crc32;
 
         // check CRC
         if (this._option.checkCRC && calcCrc !== fileCrc) {
@@ -165,13 +166,13 @@ class Parser extends ChunkStream {
 
         this._crc.write(data);
 
-        var width = data.readUInt32BE(0),
-            height = data.readUInt32BE(4),
-            depth = data[8],
-            colorType = data[9], // bits: 1 palette, 2 color, 4 alpha
-            compr = data[10],
-            filter = data[11],
-            interlace = data[12];
+        const width = data.readUInt32BE(0);
+        const height = data.readUInt32BE(4);
+        const depth = data[8];
+        const colorType = data[9]; // bits: 1 palette, 2 color, 4 alpha
+        const compr = data[10];
+        const filter = data[11];
+        const interlace = data[12];
 
         if (depth !== 8) {
             this.emit('error', new Error('Unsupported bit depth ' + depth));
@@ -226,9 +227,9 @@ class Parser extends ChunkStream {
 
         this._crc.write(data);
 
-        var entries = Math.floor(data.length / 3);
+        const entries = Math.floor(data.length / 3);
 
-        for (var i = 0; i < entries; i++) {
+        for (let i = 0; i < entries; i++) {
             this._palette.push([
                 data.readUInt8(i * 3),
                 data.readUInt8(i * 3 + 1),
@@ -258,7 +259,7 @@ class Parser extends ChunkStream {
                 this.emit('error', new Error('More transparent colors than palette size'));
                 return;
             }
-            for (var i = 0; i < this._palette.length; i++) {
+            for (let i = 0; i < this._palette.length; i++) {
                 this._palette[i][3] = i < data.length ? data.readUInt8(i) : 0xff;
             }
         }
@@ -331,10 +332,10 @@ class Parser extends ChunkStream {
 
         if (this._colorType === 3) { // paletted
 
-            var i: number, y: number, x: number, pxRowPos: number, pxPos: number, color: number[];
+            let i: number, y: number, x: number, pxRowPos: number, pxPos: number, color: number[];
 
             // use values from palette
-            var pxLineLength = width << 2;
+            const pxLineLength = width << 2;
 
             for (y = 0; y < height; y++) {
                 pxRowPos = y * pxLineLength;

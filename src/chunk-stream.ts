@@ -116,7 +116,7 @@ class ChunkStream extends stream.Duplex {
 
     private _process() {
 
-        var buf: Buffer, data: Buffer, len: number, pos: number, count: number, read: any;
+        let buf: Buffer, data: Buffer, len: number, pos: number, count: number, read: any;
 
         // as long as there is any data and read requests
         while (this._buffered > 0 && this._reads && this._reads.length > 0) {

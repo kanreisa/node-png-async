@@ -3,7 +3,7 @@
 
 import stream = require('stream');
 
-var crcTable = [
+const crcTable = [
     0, 1996959894, -301047508, -1727442502, 124634137, 1886057615, -379345611, -1637575261,
     249268274, 2044508324, -522852066, -1747789432, 162941995, 2125561021, -407360249, -1866523247,
     498536548, 1789927666, -205950648, -2067906082, 450548861, 1843258603, -187386543, -2083289657,
@@ -58,7 +58,7 @@ class CrcStream extends stream.Writable {
 
     _write(data, encoding, cb): void {
 
-        for (var i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
             this._crc = crcTable[(this._crc ^ data[i]) & 0xff] ^ (this._crc >>> 8);
         }
 
@@ -76,9 +76,9 @@ class CrcStream extends stream.Writable {
 
     static crc32(buf: Buffer): number {
 
-        var crc = -1;
+        let crc = -1;
 
-        for (var i = 0; i < buf.length; i++) {
+        for (let i = 0; i < buf.length; i++) {
             crc = crcTable[(crc ^ buf[i]) & 0xff] ^ (crc >>> 8);
         }
 

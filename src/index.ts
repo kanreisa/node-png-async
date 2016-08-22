@@ -99,7 +99,7 @@ export class Image extends stream.Duplex {
     parse(data: Buffer, callback?: (err: Error, image: Image) => void): Image {
 
         if (callback) {
-            var onParsed = null, onError = null;
+            let onParsed = null, onError = null;
 
             this.once('parsed', onParsed = (data) => {
                 this.removeListener('error', onError);
@@ -137,7 +137,7 @@ export class Image extends stream.Duplex {
             throw new Error('bitblt writing outside image');
         }
 
-        for (var y = 0; y < h; y++) {
+        for (let y = 0; y < h; y++) {
             this.data.copy(
                 dst.data,
                 ((dy + y) * dst.width + dx) << 2,

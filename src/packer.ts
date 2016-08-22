@@ -36,11 +36,11 @@ class Packer extends stream.Readable {
         this.emit('data', this._packIHDR(width, height));
 
         // filter pixel data
-        var filter = new Filter(width, height, 4, data, this._option);
+        const filter = new Filter(width, height, 4, data, this._option);
         data = filter.filter();
 
         // compress it
-        var deflate = zlib.createDeflate({
+        const deflate = zlib.createDeflate({
             chunkSize: this._option.deflateChunkSize,
             level: this._option.deflateLevel,
             strategy: this._option.deflateStrategy
@@ -66,8 +66,8 @@ class Packer extends stream.Readable {
 
     private _packChunk(type: number, data?: Buffer): Buffer {
 
-        var len = (data ? data.length : 0),
-            buf = new Buffer(len + 12);
+        const len = (data ? data.length : 0);
+        const buf = new Buffer(len + 12);
 
         buf.writeUInt32BE(len, 0);
         buf.writeUInt32BE(type, 4);
@@ -83,7 +83,7 @@ class Packer extends stream.Readable {
 
     private _packIHDR(width: number, height: number) {
 
-        var buf = new Buffer(13);
+        const buf = new Buffer(13);
         buf.writeUInt32BE(width, 0);
         buf.writeUInt32BE(height, 4);
         buf[8] = 8;

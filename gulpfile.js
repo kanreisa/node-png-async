@@ -1,16 +1,15 @@
-/*jslint node:true, white:true */
 'use strict';
 
-var fs = require('fs');
-var gulp = require('gulp');
-var rename = require('gulp-rename');
-var mocha = require('gulp-mocha');
-var typescript = require('gulp-typescript');
-var merge = require('merge2');
+const fs = require('fs');
+const gulp = require('gulp');
+const rename = require('gulp-rename');
+const mocha = require('gulp-mocha');
+const typescript = require('gulp-typescript');
+const merge = require('merge2');
 
-gulp.task('tsc', function () {
+gulp.task('tsc', () => {
 
-    var result = gulp.src('src/*.ts').pipe(typescript({
+    const result = gulp.src('src/*.ts').pipe(typescript({
         target: 'ES6',
         module: 'commonjs',
         declarationFiles: true
@@ -29,7 +28,7 @@ gulp.task('test', test);
 
 gulp.task('build', ['tsc']);
 
-gulp.task('watch', function () {
+gulp.task('watch', () => {
     gulp.watch('src/*.ts', ['default']);
     gulp.watch('test/*.js', ['test']);
 });

@@ -6,7 +6,7 @@ import zlib = require('zlib');
 import png = require('./index');
 import ChunkStream = require('./chunk-stream');
 
-var pixelBppMap = {
+const pixelBppMap = {
     1: { // L
         0: 0,
         1: 0,
@@ -33,12 +33,12 @@ var pixelBppMap = {
     }
 };
 
-var PaethPredictor = function (left: number, above: number, upLeft: number): number {
+function PaethPredictor(left: number, above: number, upLeft: number): number {
 
-    var p = left + above - upLeft,
-        pLeft = Math.abs(p - left),
-        pAbove = Math.abs(p - above),
-        pUpLeft = Math.abs(p - upLeft);
+    const p = left + above - upLeft;
+    const pLeft = Math.abs(p - left);
+    const pAbove = Math.abs(p - above);
+    const pUpLeft = Math.abs(p - upLeft);
 
     if (pLeft <= pAbove && pLeft <= pUpLeft) {
         return left;
@@ -92,9 +92,9 @@ class Filter extends ChunkStream {
 
     filter(): Buffer {
 
-        var pxData = this._data,
-            rawData = new Buffer(((this._width << 2) + 1) * this._height),
-            i: number, l: number, y: number, min: number, sel: number, sum: number;
+        const pxData = this._data;
+        const rawData = new Buffer(((this._width << 2) + 1) * this._height);
+        let i: number, l: number, y: number, min: number, sel: number, sum: number;
 
         for (y = 0; y < this._height; y++) {
             // find best filter for this line (with lowest sum of values)
@@ -118,11 +118,11 @@ class Filter extends ChunkStream {
 
     private _reverseFilterLine(rawData: Buffer): void {
 
-        var pxData = this._data,
-            pxLineLength = this._width << 2,
-            pxRowPos = this._line * pxLineLength,
-            filter = rawData[0],
-            i: number, x: number, pxPos: number, rawPos: number, idx: number, left: number, up: number, add: number, upLeft: number;
+        const pxData = this._data;
+        const pxLineLength = this._width << 2;
+        const pxRowPos = this._line * pxLineLength;
+        const filter = rawData[0];
+        let i: number, x: number, pxPos: number, rawPos: number, idx: number, left: number, up: number, add: number, upLeft: number;
 
         if (filter === 0) {
             for (x = 0; x < this._width; x++) {
@@ -201,12 +201,12 @@ class Filter extends ChunkStream {
 
     private _filterNone(pxData: Buffer, y: number, rawData: Buffer): number {
 
-        var pxRowLength = this._width << 2,
-            rawRowLength = pxRowLength + 1,
-            sum = 0;
+        const pxRowLength = this._width << 2;
+        const rawRowLength = pxRowLength + 1;
+        let sum = 0;
 
         if (!rawData) {
-            for (var x = 0; x < pxRowLength; x++) {
+            for (let x = 0; x < pxRowLength; x++) {
                 sum += Math.abs(pxData[y * pxRowLength + x]);
             }
         } else {
@@ -219,16 +219,16 @@ class Filter extends ChunkStream {
 
     private _filterSub(pxData: Buffer, y: number, rawData: Buffer): number {
 
-        var pxRowLength = this._width << 2,
-            rawRowLength = pxRowLength + 1,
-            sum = 0,
-            left: number, val: number;
+        const pxRowLength = this._width << 2;
+        const rawRowLength = pxRowLength + 1;
+        let sum = 0;
+        let left: number, val: number;
 
         if (rawData) {
             rawData[y * rawRowLength] = 1;
         }
 
-        for (var x = 0; x < pxRowLength; x++) {
+        for (let x = 0; x < pxRowLength; x++) {
             left = x >= 4 ? pxData[y * pxRowLength + x - 4] : 0;
             val = pxData[y * pxRowLength + x] - left;
 
@@ -244,16 +244,16 @@ class Filter extends ChunkStream {
 
     private _filterUp(pxData: Buffer, y: number, rawData: Buffer): number {
 
-        var pxRowLength = this._width << 2,
-            rawRowLength = pxRowLength + 1,
-            sum = 0,
-            up: number, val: number;
+        const pxRowLength = this._width << 2;
+        const rawRowLength = pxRowLength + 1;
+        let sum = 0;
+        let up: number, val: number;
 
         if (rawData) {
             rawData[y * rawRowLength] = 2;
         }
 
-        for (var x = 0; x < pxRowLength; x++) {
+        for (let x = 0; x < pxRowLength; x++) {
             up = y > 0 ? pxData[(y - 1) * pxRowLength + x] : 0;
             val = pxData[y * pxRowLength + x] - up;
 
@@ -269,16 +269,16 @@ class Filter extends ChunkStream {
 
     private _filterAvg(pxData: Buffer, y: number, rawData: Buffer): number {
 
-        var pxRowLength = this._width << 2,
-            rawRowLength = pxRowLength + 1,
-            sum = 0,
-            left: number, up: number, val: number;
+        const pxRowLength = this._width << 2;
+        const rawRowLength = pxRowLength + 1;
+        let sum = 0;
+        let left: number, up: number, val: number;
 
         if (rawData) {
             rawData[y * rawRowLength] = 3;
         }
 
-        for (var x = 0; x < pxRowLength; x++) {
+        for (let x = 0; x < pxRowLength; x++) {
             left = x >= 4 ? pxData[y * pxRowLength + x - 4] : 0;
             up = y > 0 ? pxData[(y - 1) * pxRowLength + x] : 0;
             val = pxData[y * pxRowLength + x] - ((left + up) >> 1);
@@ -295,16 +295,16 @@ class Filter extends ChunkStream {
 
     private _filterPaeth(pxData: Buffer, y: number, rawData: Buffer): number {
 
-        var pxRowLength = this._width << 2,
-            rawRowLength = pxRowLength + 1,
-            sum = 0,
-            left: number, up: number, upLeft: number, val: number;
+        const pxRowLength = this._width << 2;
+        const rawRowLength = pxRowLength + 1;
+        let sum = 0;
+        let left: number, up: number, upLeft: number, val: number;
 
         if (rawData) {
             rawData[y * rawRowLength] = 4;
         }
 
-        for (var x = 0; x < pxRowLength; x++) {
+        for (let x = 0; x < pxRowLength; x++) {
             left = x >= 4 ? pxData[y * pxRowLength + x - 4] : 0;
             up = y > 0 ? pxData[(y - 1) * pxRowLength + x] : 0;
             upLeft = x >= 4 && y > 0 ? pxData[(y - 1) * pxRowLength + x - 4] : 0;
