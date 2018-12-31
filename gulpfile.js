@@ -1,36 +1,30 @@
-'use strict';
+"use strict";
 
-const fs = require('fs');
-const gulp = require('gulp');
-const rename = require('gulp-rename');
-const mocha = require('gulp-mocha');
-const typescript = require('gulp-typescript');
-const merge = require('merge2');
+const gulp = require("gulp");
+const typescript = require("gulp-typescript");
+const sourcemaps = require("gulp-sourcemaps");
 
-gulp.task('tsc', () => {
-
-    const result = gulp.src('src/*.ts').pipe(typescript({
-        target: 'ES5',
-        module: 'commonjs',
-        declarationFiles: true
-    }));
-
-    return merge([
-        result.dts.pipe(gulp.dest('lib')),
-        result.js.pipe(gulp.dest('lib'))
-    ]);
+gulp.task("build", () => {
+    return gulp
+        .src([
+            "src/**/*.ts"
+        ])
+        .pipe(sourcemaps.init())
+        .pipe(typescript({
+            typescript: require("typescript"),
+            alwaysStrict: true,
+            target: "ES6",
+            module: "commonjs",
+            moduleResolution: "node",
+            removeComments: false,
+            declarationFiles: true
+        }))
+        .pipe(sourcemaps.write("./"))
+        .pipe(gulp.dest("lib"));
 });
 
-function test() {
-    return gulp.src(['test/*.js']).pipe(mocha({ reporter: 'spec', timeout: 3000, slow: 10 }));
-};
-gulp.task('test', test);
-
-gulp.task('build', ['tsc']);
-
-gulp.task('watch', () => {
-    gulp.watch('src/*.ts', ['default']);
-    gulp.watch('test/*.js', ['test']);
+gulp.task("watch", () => {
+    gulp.watch("src/**/*.ts", gulp.task("build"));
 });
 
-gulp.task('default', ['build'], test);
+gulp.task("default", gulp.task("build"));

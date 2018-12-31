@@ -1,8 +1,4 @@
-/// <reference path="../typings/index.d.ts" />
-'use strict';
-
 import zlib = require('zlib');
-
 import png = require('./index');
 import constants = require('./constants');
 import CrcStream = require('./crc');

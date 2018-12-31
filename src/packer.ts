@@ -1,9 +1,5 @@
-/// <reference path="../typings/index.d.ts" />
-'use strict';
-
 import zlib = require('zlib');
 import stream = require('stream');
-
 import png = require('./index');
 import constants = require('./constants');
 import CrcStream = require('./crc');
@@ -48,7 +44,7 @@ class Packer extends stream.Readable {
 
         deflate.on('error', this.emit.bind(this, 'error'));
 
-        deflate.on('data', (data) => {
+        deflate.on('data', (data: Buffer) => {
             this.emit('data', this._packIDAT(data));
         });
 

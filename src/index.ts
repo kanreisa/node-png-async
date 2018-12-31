@@ -1,8 +1,4 @@
-/// <reference path="../typings/index.d.ts" />
-'use strict';
-
 import stream = require('stream');
-
 import Parser = require('./parser');
 import Packer = require('./packer');
 

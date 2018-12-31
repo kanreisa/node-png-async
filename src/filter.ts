@@ -1,8 +1,3 @@
-/// <reference path="../typings/index.d.ts" />
-'use strict';
-
-import zlib = require('zlib');
-
 import png = require('./index');
 import ChunkStream = require('./chunk-stream');
 
