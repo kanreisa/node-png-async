@@ -1,13 +1,14 @@
 {
   "name": "png-async",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "A simple and non-blocking PNG encoder / decoder.",
   "main": "./lib/index.js",
   "scripts": {
     "build": "gulp build",
     "watch": "gulp watch",
     "test": "mocha --exit test/*.js",
-    "clean": "rimraf lib/*"
+    "clean": "rimraf lib/*",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "repository": {
     "type": "git",
