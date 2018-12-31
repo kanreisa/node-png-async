@@ -1,6 +1,6 @@
-import stream = require('stream');
-import Parser = require('./parser');
-import Packer = require('./packer');
+import stream = require("stream");
+import Parser = require("./parser");
+import Packer = require("./packer");
 
 export interface IImageOptions {
     width?: number;
@@ -51,7 +51,7 @@ export class Image extends stream.Duplex {
         this.height = option.height || 0;
 
         if (this.width > 0 && this.height > 0) {
-            this.data = new Buffer(4 * this.width * this.height);
+            this.data = Buffer.alloc(4 * this.width * this.height);
 
             if (option.fill) {
                 this.data.fill(0);
@@ -65,21 +65,21 @@ export class Image extends stream.Duplex {
 
         this._parser = new Parser(option || {});
 
-        this._parser.on('error', this.emit.bind(this, 'error'));
-        this._parser.on('close', this._handleClose.bind(this));
-        this._parser.on('metadata', this._metadata.bind(this));
-        this._parser.on('gamma', this._gamma.bind(this));
-        this._parser.on('parsed', (data) => {
+        this._parser.on("error", this.emit.bind(this, "error"));
+        this._parser.on("close", this._handleClose.bind(this));
+        this._parser.on("metadata", this._metadata.bind(this));
+        this._parser.on("gamma", this._gamma.bind(this));
+        this._parser.on("parsed", (data) => {
             this.data = data;
-            this.emit('parsed', data);
+            this.emit("parsed", data);
         });
 
         this._packer = new Packer(option);
 
-        this._packer.on('data', this.emit.bind(this, 'data'));
-        this._packer.on('end', this.emit.bind(this, 'end'));
-        this._packer.on('close', this._handleClose.bind(this));
-        this._packer.on('error', this.emit.bind(this, 'error'));
+        this._packer.on("data", this.emit.bind(this, "data"));
+        this._packer.on("end", this.emit.bind(this, "end"));
+        this._packer.on("close", this._handleClose.bind(this));
+        this._packer.on("error", this.emit.bind(this, "error"));
     }
 
     pack(): Image {
@@ -97,15 +97,15 @@ export class Image extends stream.Duplex {
         if (callback) {
             let onParsed = null, onError = null;
 
-            this.once('parsed', onParsed = (data) => {
-                this.removeListener('error', onError);
+            this.once("parsed", onParsed = (data) => {
+                this.removeListener("error", onError);
 
                 this.data = data;
                 callback(null, this);
             });
 
-            this.once('error', onError = (err) => {
-                this.removeListener('parsed', onParsed);
+            this.once("error", onError = (err) => {
+                this.removeListener("parsed", onParsed);
 
                 callback(err, null);
             });
@@ -127,10 +127,10 @@ export class Image extends stream.Duplex {
     bitblt(dst: Image, sx: number, sy: number, w: number, h: number, dx: number, dy: number) {
 
         if (sx > this.width || sy > this.height || sx + w > this.width || sy + h > this.height) {
-            throw new Error('bitblt reading outside image');
+            throw new Error("bitblt reading outside image");
         }
         if (dx > dst.width || dy > dst.height || dx + w > dst.width || dy + h > dst.height) {
-            throw new Error('bitblt writing outside image');
+            throw new Error("bitblt writing outside image");
         }
 
         for (let y = 0; y < h; y++) {
@@ -156,7 +156,7 @@ export class Image extends stream.Duplex {
         this.data = metadata.data;
 
         delete metadata.data;
-        this.emit('metadata', metadata);
+        this.emit("metadata", metadata);
     }
 
     private _gamma(gamma: number): void {
@@ -165,7 +165,7 @@ export class Image extends stream.Duplex {
 
     private _handleClose(): void {
         if (!this._parser.writable && !this._packer.readable) {
-            this.emit('close');
+            this.emit("close");
         }
     }
 }

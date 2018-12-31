@@ -1,4 +1,4 @@
-import stream = require('stream');
+import stream = require("stream");
 
 const crcTable = [
     0, 1996959894, -301047508, -1727442502, 124634137, 1886057615, -379345611, -1637575261,
@@ -68,7 +68,7 @@ class CrcStream extends stream.Writable {
             this.write(data);
         }
 
-        this.emit('crc', this.crc32);
+        this.emit("crc", this.crc32);
     }
 
     static crc32(buf: Buffer): number {

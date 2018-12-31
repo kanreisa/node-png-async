@@ -1,4 +1,4 @@
-import stream = require('stream');
+import stream = require("stream");
 
 export = ChunkStream;
 
@@ -23,13 +23,13 @@ class ChunkStream extends stream.Duplex {
     }
 
     _read(size) {
-        throw new Error('Not implemented');
+        throw new Error("Not implemented");
     }
 
     _write(data, encoding, cb) {
 
         if (this.writable === false) {
-            cb(new Error('Stream not writable'));
+            cb(new Error("Stream not writable"));
             return false;
         }
 
@@ -62,7 +62,7 @@ class ChunkStream extends stream.Duplex {
             if (this._paused && this._reads.length > 0) {
                 this._paused = false;
 
-                this.emit('drain');
+                this.emit("drain");
             }
         });
     }
@@ -99,13 +99,13 @@ class ChunkStream extends stream.Duplex {
         this._reads = null;
         this._buffers = null;
 
-        this.emit('close');
+        this.emit("close");
     }
 
     private _end() {
 
         if (this._reads.length > 0) {
-            this.emit('error', new Error('There are some read requests waitng on finished stream'));
+            this.emit("error", new Error("There are some read requests waitng on finished stream"));
         }
 
         this.destroy();
@@ -151,7 +151,7 @@ class ChunkStream extends stream.Duplex {
 
                 pos = 0;
                 count = 0;
-                data = new Buffer(read.length);
+                data = Buffer.alloc(read.length);
 
                 // create buffer for all data
                 while (pos < read.length) {

@@ -1,9 +1,9 @@
-import zlib = require('zlib');
-import png = require('./index');
-import constants = require('./constants');
-import CrcStream = require('./crc');
-import ChunkStream = require('./chunk-stream');
-import Filter = require('./filter');
+import zlib = require("zlib");
+import png = require("./index");
+import constants = require("./constants");
+import CrcStream = require("./crc");
+import ChunkStream = require("./chunk-stream");
+import Filter = require("./filter");
 
 const colorTypeToBppMap = {
     0: 1,
@@ -55,7 +55,7 @@ class Parser extends ChunkStream {
 
         this.writable = true;
 
-        this.on('error', this._handleError.bind(this));
+        this.on("error", this._handleError.bind(this));
         this._handleSignature();
     }
 
@@ -80,7 +80,7 @@ class Parser extends ChunkStream {
 
         for (let i = 0; i < signature.length; i++) {
             if (data[i] !== signature[i]) {
-                this.emit('error', new Error('Invalid file signature'));
+                this.emit("error", new Error("Invalid file signature"));
                 return;
             }
         }
@@ -96,12 +96,12 @@ class Parser extends ChunkStream {
         // chunk type
         const type = data.readUInt32BE(4);
 
-        let name = '';
+        let name = "";
         for (let i = 4; i < 8; i++) {
             name += String.fromCharCode(data[i]);
         }
 
-        // console.log('chunk ', name, length);
+        // console.log("chunk ", name, length);
 
         // chunk flags
         const ancillary = !!(data[4] & 0x20);  // or critical
@@ -109,18 +109,18 @@ class Parser extends ChunkStream {
         //const safeToCopy = !!(data[7] & 0x20);  // or unsafe
 
         if (!this._hasIHDR && type !== constants.TYPE_IHDR) {
-            this.emit('error', new Error('Expected IHDR on beginning'));
+            this.emit("error", new Error("Expected IHDR on beginning"));
             return;
         }
 
         this._crc = new CrcStream();
-        this._crc.write(new Buffer(name));
+        this._crc.write(Buffer.from(name));
 
         if (this._chunks[type]) {
             return this._chunks[type](length);
 
         } else if (!ancillary) {
-            this.emit('error', new Error('Unsupported critical chunk type ' + name));
+            this.emit("error", new Error("Unsupported critical chunk type " + name));
             return;
         } else {
             this.read(length + 4, this._skipChunk.bind(this));
@@ -142,7 +142,7 @@ class Parser extends ChunkStream {
 
         // check CRC
         if (this._option.checkCRC && calcCrc !== fileCrc) {
-            this.emit('error', new Error('Crc error'));
+            this.emit("error", new Error("Crc error"));
             return;
         }
 
@@ -171,29 +171,29 @@ class Parser extends ChunkStream {
         const interlace = data[12];
 
         if (depth !== 8) {
-            this.emit('error', new Error('Unsupported bit depth ' + depth));
+            this.emit("error", new Error("Unsupported bit depth " + depth));
             return;
         }
         if (!(colorType in colorTypeToBppMap)) {
-            this.emit('error', new Error('Unsupported color type'));
+            this.emit("error", new Error("Unsupported color type"));
             return;
         }
         if (compr !== 0) {
-            this.emit('error', new Error('Unsupported compression method'));
+            this.emit("error", new Error("Unsupported compression method"));
             return;
         }
         if (filter !== 0) {
-            this.emit('error', new Error('Unsupported filter method'));
+            this.emit("error", new Error("Unsupported filter method"));
             return;
         }
         if (interlace !== 0) {
-            this.emit('error', new Error('Unsupported interlace method'));
+            this.emit("error", new Error("Unsupported interlace method"));
             return;
         }
 
         this._colorType = colorType;
 
-        this._data = new Buffer(width * height * 4);
+        this._data = Buffer.alloc(width * height * 4);
         this._filter = new Filter(
             width, height,
             colorTypeToBppMap[this._colorType],
@@ -203,7 +203,7 @@ class Parser extends ChunkStream {
 
         this._hasIHDR = true;
 
-        this.emit('metadata', {
+        this.emit("metadata", {
             width: width,
             height: height,
             palette: !!(colorType & constants.COLOR_PALETTE),
@@ -248,11 +248,11 @@ class Parser extends ChunkStream {
         // palette
         if (this._colorType === 3) {
             if (this._palette.length === 0) {
-                this.emit('error', new Error('Transparency chunk must be after palette'));
+                this.emit("error", new Error("Transparency chunk must be after palette"));
                 return;
             }
             if (data.length > this._palette.length) {
-                this.emit('error', new Error('More transparent colors than palette size'));
+                this.emit("error", new Error("More transparent colors than palette size"));
                 return;
             }
             for (let i = 0; i < this._palette.length; i++) {
@@ -273,7 +273,7 @@ class Parser extends ChunkStream {
     private _parseGAMA(data: Buffer): void {
 
         this._crc.write(data);
-        this.emit('gamma', data.readUInt32BE(0) / 100000);
+        this.emit("gamma", data.readUInt32BE(0) / 100000);
 
         this._handleChunkEnd();
     }
@@ -287,14 +287,14 @@ class Parser extends ChunkStream {
         this._crc.write(data);
 
         if (this._colorType === 3 && this._palette.length === 0) {
-            throw new Error('Expected palette not found');
+            throw new Error("Expected palette not found");
         }
 
         if (!this._inflate) {
             this._inflate = zlib.createInflate();
 
-            this._inflate.on('error', this.emit.bind(this, 'error'));
-            this._filter.on('complete', this._reverseFiltered.bind(this));
+            this._inflate.on("error", this.emit.bind(this, "error"));
+            this._filter.on("complete", this._reverseFiltered.bind(this));
 
             this._inflate.pipe(this._filter);
         }
@@ -347,6 +347,6 @@ class Parser extends ChunkStream {
             }
         }
 
-        this.emit('parsed', data);
+        this.emit("parsed", data);
     }
 }

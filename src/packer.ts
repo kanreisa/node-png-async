@@ -1,9 +1,9 @@
-import zlib = require('zlib');
-import stream = require('stream');
-import png = require('./index');
-import constants = require('./constants');
-import CrcStream = require('./crc');
-import Filter = require('./filter');
+import zlib = require("zlib");
+import stream = require("stream");
+import png = require("./index");
+import constants = require("./constants");
+import CrcStream = require("./crc");
+import Filter = require("./filter");
 
 export = Packer;
 
@@ -28,8 +28,8 @@ class Packer extends stream.Readable {
     pack(data: Buffer, width: number, height: number): void {
 
         // Signature
-        this.emit('data', new Buffer(constants.PNG_SIGNATURE));
-        this.emit('data', this._packIHDR(width, height));
+        this.emit("data", Buffer.from(constants.PNG_SIGNATURE));
+        this.emit("data", this._packIHDR(width, height));
 
         // filter pixel data
         const filter = new Filter(width, height, 4, data, this._option);
@@ -42,15 +42,15 @@ class Packer extends stream.Readable {
             strategy: this._option.deflateStrategy
         });
 
-        deflate.on('error', this.emit.bind(this, 'error'));
+        deflate.on("error", this.emit.bind(this, "error"));
 
-        deflate.on('data', (data: Buffer) => {
-            this.emit('data', this._packIDAT(data));
+        deflate.on("data", (data: Buffer) => {
+            this.emit("data", this._packIDAT(data));
         });
 
-        deflate.on('end', () => {
-            this.emit('data', this._packIEND());
-            this.emit('end');
+        deflate.on("end", () => {
+            this.emit("data", this._packIEND());
+            this.emit("end");
         });
 
         deflate.end(data);
@@ -63,7 +63,7 @@ class Packer extends stream.Readable {
     private _packChunk(type: number, data?: Buffer): Buffer {
 
         const len = (data ? data.length : 0);
-        const buf = new Buffer(len + 12);
+        const buf = Buffer.alloc(len + 12);
 
         buf.writeUInt32BE(len, 0);
         buf.writeUInt32BE(type, 4);
@@ -79,7 +79,7 @@ class Packer extends stream.Readable {
 
     private _packIHDR(width: number, height: number) {
 
-        const buf = new Buffer(13);
+        const buf = Buffer.alloc(13);
         buf.writeUInt32BE(width, 0);
         buf.writeUInt32BE(height, 4);
         buf[8] = 8;

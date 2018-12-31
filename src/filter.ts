@@ -1,5 +1,5 @@
-import png = require('./index');
-import ChunkStream = require('./chunk-stream');
+import png = require("./index");
+import ChunkStream = require("./chunk-stream");
 
 const pixelBppMap = {
     1: { // L
@@ -70,7 +70,7 @@ class Filter extends ChunkStream {
 
         if (option.filterType === undefined || option.filterType === -1) {
             this._filterTypes = [0, 1, 2, 3, 4];
-        } else if (typeof option.filterType === 'number') {
+        } else if (typeof option.filterType === "number") {
             this._filterTypes = [option.filterType];
         }
 
@@ -88,7 +88,7 @@ class Filter extends ChunkStream {
     filter(): Buffer {
 
         const pxData = this._data;
-        const rawData = new Buffer(((this._width << 2) + 1) * this._height);
+        const rawData = Buffer.alloc(((this._width << 2) + 1) * this._height);
         let i: number, l: number, y: number, min: number, sel: number, sum: number;
 
         for (y = 0; y < this._height; y++) {
@@ -190,7 +190,7 @@ class Filter extends ChunkStream {
         if (this._line < this._height) {
             this.read(this._width * this._bpp + 1, this._reverseFilterLine.bind(this));
         } else {
-            this.emit('complete', this._data, this._width, this._height);
+            this.emit("complete", this._data, this._width, this._height);
         }
     }
 
