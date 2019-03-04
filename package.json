@@ -4,8 +4,8 @@
   "description": "A simple and non-blocking PNG encoder / decoder.",
   "main": "./lib/index.js",
   "scripts": {
-    "build": "gulp build",
-    "watch": "gulp watch",
+    "build": "tsc --declaration",
+    "watch": "tsc -w --declaration",
     "test": "mocha --exit test/*.js",
     "clean": "rimraf lib/*",
     "prepublishOnly": "npm run clean && npm run build"
@@ -33,9 +33,6 @@
   "homepage": "https://github.com/kanreisa/node-png-async",
   "devDependencies": {
     "@types/node": "^8.10.39",
-    "gulp": "^4.0.0",
-    "gulp-sourcemaps": "^2.6.4",
-    "gulp-typescript": "^4.0.2",
     "mocha": "^5.2.0",
     "rimraf": "^2.6.2",
     "should": "^5.0.1",
