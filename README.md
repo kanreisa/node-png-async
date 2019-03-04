@@ -1,7 +1,6 @@
 # png-async
 A simple and **non-blocking** PNG encoder / decoder for Node.
 
-[![TypeScript definitions on DefinitelyTyped][dts-img]][dts-url]
 [![npm version][npm-img]][npm-url]
 [![Linux Build][travis-img]][travis-url]
 [![Windows Build][appveyor-img]][appveyor-url]
@@ -21,8 +20,8 @@ $ npm install png-async --save
 $ git clone https://github.com/kanreisa/node-png-async.git
 $ cd node-png-async
 $ npm install
-$ npm run typings-install
 $ npm run build
+$ npm run test
 ```
 
 ## Example
@@ -147,8 +146,6 @@ Gamma of image (0 if not specified)
 
 [npm-img]: https://img.shields.io/npm/v/png-async.svg
 [npm-url]: https://npmjs.org/package/png-async
-[dts-img]: https://img.shields.io/badge/DefinitelyTyped-.d.ts-1a8bcb.svg
-[dts-url]: http://definitelytyped.org/
 [travis-img]: https://img.shields.io/travis/kanreisa/node-png-async.svg
 [travis-url]: https://travis-ci.org/kanreisa/node-png-async
 [appveyor-img]: https://img.shields.io/appveyor/ci/kanreisa/node-png-async.svg

@@ -3,6 +3,7 @@
   "version": "0.9.3",
   "description": "A simple and non-blocking PNG encoder / decoder.",
   "main": "./lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc --declaration",
     "watch": "tsc -w --declaration",
