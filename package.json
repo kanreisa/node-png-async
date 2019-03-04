@@ -1,6 +1,6 @@
 {
   "name": "png-async",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "A simple and non-blocking PNG encoder / decoder.",
   "main": "./lib/index.js",
   "types": "lib/index.d.ts",
